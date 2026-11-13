@@ -33,15 +33,15 @@ const ASSESSMENT_BANK = [
 
 function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
 function buildAssessmentSelection(){
-  const saved=localStorage.getItem('ia_assessment_selection');
-  if(saved){try{const ids=JSON.parse(saved);const qs=ids.map(id=>ASSESSMENT_BANK.find(q=>q.id===id)).filter(Boolean);if(qs.length===12)return qs}catch(e){}}
+  const saved=courseStorage.getItem('ia_assessment_selection');
+  if(saved){try{const ids=JSON.parse(saved);const qs=ids.map(id=>ASSESSMENT_BANK.find(q=>q.id===id)).filter(Boolean);if(Array.isArray(ids)&&qs.length===12&&new Set(ids).size===12)return qs}catch(e){}}
   const cats=[...new Set(ASSESSMENT_BANK.map(q=>q.cat))];
   let chosen=[];
   cats.forEach(cat=>{const pool=ASSESSMENT_BANK.filter(q=>q.cat===cat);chosen.push(pool[Math.floor(Math.random()*pool.length)])});
   const remaining=shuffle(ASSESSMENT_BANK.filter(q=>!chosen.some(c=>c.id===q.id)));
   while(chosen.length<12&&remaining.length)chosen.push(remaining.shift());
   chosen=shuffle(chosen).slice(0,12);
-  localStorage.setItem('ia_assessment_selection',JSON.stringify(chosen.map(q=>q.id)));
+  courseStorage.setItem('ia_assessment_selection',JSON.stringify(chosen.map(q=>q.id)));
   return chosen;
 }
 function renderRandomAssessment(){
@@ -52,16 +52,16 @@ function renderRandomAssessment(){
     return `<div class="quiz assessment-item" data-qid="${item.id}" data-cat="${item.cat}"><div class="quiz-question"><span class="question-kicker">${idx+1}. ${item.cat}</span>${item.q}</div>${pairs.map((p,i)=>`<label class="option radio-option"><input type="radio" name="a${idx}" data-correct="${p.correct?'1':'0'}"> <span>${p.text}</span></label>`).join('')}<div class="assessment-explanation" hidden>${item.exp}</div></div>`
   }).join('') + `<div class="assessment-actions"><button class="btn btn-primary" id="assessmentButton">Calcular resultado</button><button class="btn btn-outline" id="newAssessmentButton" type="button">Sortear nova tentativa</button></div><div id="assessmentResult" style="margin-top:1rem"></div>`;
   document.getElementById('assessmentButton').addEventListener('click',scoreRandomAssessment);
-  document.getElementById('newAssessmentButton').addEventListener('click',()=>{if(confirm('Sortear outras 12 questões? A tentativa atual não será salva.')){localStorage.removeItem('ia_assessment_selection');location.reload()}});
-  const saved=localStorage.getItem('ia_final_score'); if(saved){const r=document.getElementById('assessmentResult');r.innerHTML=`<div class="small">Último resultado salvo</div><div class="final-score">${saved}%</div><a class="btn btn-soft" href="resultado-final.html">Ver desempenho consolidado →</a>`;r.className='score-box'}
+  document.getElementById('newAssessmentButton').addEventListener('click',()=>{if(confirm('Sortear outras 12 questões? A tentativa atual não será salva.')){courseStorage.removeItem('ia_assessment_selection');location.reload()}});
+  const saved=courseStorage.getItem('ia_final_score'); if(saved){const r=document.getElementById('assessmentResult');r.innerHTML=`<div class="small">Último resultado salvo</div><div class="final-score">${escapeHTML(saved)}%</div><a class="btn btn-soft" href="resultado-final.html">Ver desempenho consolidado →</a>`;r.className='score-box'}
 }
 function scoreRandomAssessment(){
   const items=[...document.querySelectorAll('.assessment-item')], result=document.getElementById('assessmentResult');
   let correct=0,answered=0; const cats={};
   items.forEach(item=>{const picked=item.querySelector('input[type=radio]:checked');const cat=item.dataset.cat;cats[cat]=cats[cat]||{correct:0,total:0};cats[cat].total++;if(picked){answered++;const ok=picked.dataset.correct==='1';if(ok){correct++;cats[cat].correct++}item.classList.toggle('assessment-correct',ok);item.classList.toggle('assessment-wrong',!ok)}item.querySelectorAll('input').forEach(i=>i.disabled=true);const exp=item.querySelector('.assessment-explanation');if(exp)exp.hidden=false});
   if(answered<items.length){items.forEach(item=>{item.querySelectorAll('input').forEach(i=>i.disabled=false);item.classList.remove('assessment-correct','assessment-wrong');const exp=item.querySelector('.assessment-explanation');if(exp)exp.hidden=true});result.innerHTML=`<strong>Complete todas as questões.</strong> Você respondeu ${answered} de ${items.length}.`;result.className='feedback show no';return}
-  const pct=Math.round(correct/items.length*100), prevBest=Number(localStorage.getItem('ia_best_score')||0), best=Math.max(prevBest,pct);
-  localStorage.setItem('ia_final_score',String(pct));localStorage.setItem('ia_best_score',String(best));localStorage.setItem('ia_assessment_categories',JSON.stringify(cats));localStorage.setItem('ia_assessment_date',new Date().toISOString());
+  const pct=Math.round(correct/items.length*100), prevBest=savedScore('ia_best_score'), best=Math.max(prevBest,pct);
+  courseStorage.setItem('ia_final_score',String(pct));courseStorage.setItem('ia_best_score',String(best));courseStorage.setItem('ia_assessment_categories',JSON.stringify(cats));courseStorage.setItem('ia_assessment_date',new Date().toISOString());
   const msg=pct>=85?'Excelente domínio dos conceitos fundamentais.':pct>=70?'Bom resultado. Revise os temas com menor desempenho.':'Revise os módulos indicados antes de encerrar.';
   result.innerHTML=`<div class="final-score">${pct}%</div><strong>${correct} de ${items.length} corretas.</strong><br>${msg}<div class="toolbar center-toolbar"><a class="btn btn-primary" href="resultado-final.html">Ver desempenho consolidado →</a></div>`;result.className='score-box';
 }

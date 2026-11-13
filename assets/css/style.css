@@ -621,3 +621,8 @@ html[data-theme="dark"] .clean-hero,html[data-theme="dark"] .clean-module-hero,h
 html[data-theme="dark"] .clean-kicker,html[data-theme="dark"] .clean-module-count,html[data-theme="dark"] .lesson-step-eyebrow{background:#16243b;border-color:#35507a;color:#b7d1ff}
 html[data-theme="dark"] .visual-pill-row span{background:#16243b;border-color:#35507a;color:#d6e8ff}
 html[data-theme="dark"] .clean-lesson-copy small,html[data-theme="dark"] .glance-card p,html[data-theme="dark"] .hero-mini-stat small{color:#b8c5d5}
+
+/* Keep lesson forms and generated prompt text usable on narrow screens. */
+.course-shell textarea{display:block;width:100%;max-width:100%;min-height:7rem;padding:.75rem;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;resize:vertical}
+.prompt pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%;margin:0}
+.course-shell .card{margin:.8rem 0;padding:1rem;border:1px solid var(--line);border-radius:12px}

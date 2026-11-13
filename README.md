@@ -43,3 +43,22 @@ Site estático do aluno para GitHub Pages: nove aulas, Gemini como laboratório 
 - O progresso fica só no navegador do aluno. O certificado do site é simbólico e não comprova frequência.
 - Recursos do Gemini (arquivos, Canvas, pesquisa) dependem de conta e podem mudar; confira antes da aula.
 - Não publique o gabarito do instrutor nem a documentação institucional do curso.
+
+
+## Correções de funcionamento e segurança
+
+- Estrutura `assets/` restaurada para estilos, scripts e downloads da Aula Zero.
+- Página inicial do aluno reconstruída e Modo Professor preservado em `professor/index.html`.
+- As nove páginas de aula foram reconstruídas a partir de `roteiros-etapas.json` e do conteúdo da apresentação existente; o histórico não continha os HTMLs originais. Incluem práticas, conferência, anotações, progresso, construtor C.O.I.R.F. e Projeto Integrador.
+- Backups são validados antes da substituição de dados; versões de backup 10 e 22 são aceitas. Arquivos inválidos são rejeitados, e falhas de gravação acionam restauração dos registros anteriores.
+- Conteúdo salvo é escapado antes de aparecer em HTML; progresso considera apenas os nove identificadores válidos e únicos.
+- Cópia de prompts confirma a operação ou orienta a cópia manual. Falhas de armazenamento exibem um aviso.
+- Layout das aulas ajustado para telas pequenas e controles de preferências habilitados na página de fontes.
+
+## Verificações locais
+
+Execute `python tests/check-site.py` para verificar recursos locais, âncoras, IDs, SVGs e JSON. A sintaxe JavaScript pode ser conferida com `node --check assets/js/app.js`, `node --check assets/js/assessment.js` e `node --check assets/js/etapas.js`.
+
+O teste de navegador usa Node.js e o pacote Playwright disponível no ambiente de desenvolvimento. Com um servidor estático iniciado por `python -m http.server 8000`, execute `node tests/browser.cjs`. Para usar um Chromium já instalado, defina `CHROMIUM_PATH=/caminho/para/chromium`. O teste percorre as 27 páginas, aulas, notas, projeto, avaliação, certificado, backups, proteção contra injeção, cópia, preferências e layouts de celular. Ele usa um perfil isolado, sem alterar dados de alunos.
+
+O endereço do Modo Professor é público e não possui autenticação. O certificado continua simbólico, gerado localmente; não é uma comprovação institucional.
